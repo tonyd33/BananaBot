@@ -6,7 +6,6 @@ import re
 
 from config import PREFIX
 
-# TODO: test
 class SoundBoard(commands.Cog):
 
     def __init__(self, client):
@@ -20,7 +19,7 @@ class SoundBoard(commands.Cog):
     @commands.command(aliases=['lsb'],
                       brief="Lists sounds",
                       description="List sounds",
-                      usage=f"{PREFIX}lsb PATH")
+                      usage=f"PATH")
     @commands.guild_only()
     async def listSounds(self, ctx, *args):
         # this gives a wonky path if args is like "path/to/directory" rather than "path to directory", need check
@@ -31,11 +30,11 @@ class SoundBoard(commands.Cog):
             return
         await ctx.send(msg)
 
-    """
-    Given a path relative to ./cogs/soundboard/, return a formatted message displaying all subdirectories and files
-    recursively
-    """
     def _rlistSounds(self, path, depth=0):
+        """
+        Given a path relative to ./cogs/soundboard/, return a formatted message displaying all subdirectories and files
+        recursively
+        """
         root = './cogs/soundboard/'
         rel = os.path.join(root, path)
         if not os.path.exists(rel):
@@ -54,15 +53,15 @@ class SoundBoard(commands.Cog):
                     msg += f"{'  ' * depth}-{match.group(1)}\n"
         return msg
 
-    """
-    Takes in a space separated path to a sound and plays it.
-    """
     @commands.command(aliases=['sb', 'sound'],
                       brief="Plays a sound",
                       help="Plays a sound",
-                      usage=f"{PREFIX}sb path to sound")
+                      usage=f"[PATHTOSOUND...]")
     @commands.guild_only()
     async def soundboard(self, ctx, *args):
+        """
+        Takes in a space separated path to a sound and plays it.
+        """
         path = '/'.join(args)
         root = './cogs/soundboard/'
         relpath = os.path.join(root, f'{path}.mp3')
@@ -89,10 +88,10 @@ class SoundBoard(commands.Cog):
 
         await self.timeoutleave(voice)
 
-    """
-    Waits timeout amount of seconds before leaving the voice channel
-    """
     async def timeoutleave(self, voice, timeout=300):
+        """
+        Waits timeout amount of seconds before leaving the voice channel
+        """
         if not voice:
             return
         while voice.is_playing():
@@ -105,8 +104,7 @@ class SoundBoard(commands.Cog):
                 await voice.disconnect()
 
     @commands.command(brief="Makes Banana disconnect from the channel",
-                      description="Makes Banana disconnect from the channel",
-                      usage=f"{PREFIX}leave")
+                      description="Makes Banana disconnect from the channel")
     @commands.guild_only()
     async def leave(self, ctx):
         voice = ctx.guild.voice_client
