@@ -2,11 +2,14 @@ from discord import FFmpegAudio
 from discord.opus import Encoder as OpusEncoder
 from discord.ext import commands
 
+import time
+
 from config import PREFIX
 
 class FFmpegPulseAudio(FFmpegAudio):
     def __init__(self, source, *, executable='ffmpeg', args, **subprocess_kwargs):
         super().__init__(source, executable=executable, args=args, **subprocess_kwargs)
+        time.sleep(1)
 
     def read(self):
         ret = self._stdout.read(OpusEncoder.FRAME_SIZE)
@@ -41,15 +44,19 @@ class Radio(commands.Cog):
             spotify QUERY_OR_URL
                 Plays a spotify song based on a query or Spotify URL
         """
-        args_iter = iter(commands)
-        while command := next(args_iter, None):
-            if 'connect' in command:
-                await self.connect_to_channel(ctx)
-            elif 'start' in command:
-                self.start_audio_stream(ctx)
-            elif 'spotify' in command:
-                query_or_url = next(args_iter, None)
-                # TODO: implement
+        index = 0
+        while index < len(commands):
+            try:
+                command = commands[index]
+                if 'connect' in command:
+                    await self.connect_to_channel(ctx)
+                elif 'start' in command:
+                    self.start_audio_stream(ctx)
+                elif 'spotify' in command:
+                    query_or_url = commands[index + 1]
+                    # TODO: implement
+            except IndexError as e:
+                await ctx.send("Expected additional arguments")
 
     async def connect_to_channel(self, ctx):
         voice = ctx.guild.voice_client
@@ -68,12 +75,14 @@ class Radio(commands.Cog):
 
         if voice and voice.channel and not voice.is_playing():
             # TODO: Get correct sink, audio_rate, audio_channels or get from config
-            sink = ''
-            audio_rate = ''
-            audio_channels = ''
+            sink = '0'
+            audio_rate = '44100'
+            audio_channels = '2'
+            args = []
             input_args = f'-f pulse -i {sink} -ar {audio_rate} -ac {audio_channels}'.split(' ')
-            output_args = '-f s16le -ar 48000 -ac 2 -loglevel -warning pipe:1'.split(' ')
-            args = input_args.extend(output_args)
+            output_args = '-f s16le -ar 48000 -ac 2 -loglevel warning pipe:1'.split(' ')
+            args.extend(input_args)
+            args.extend(output_args)
             voice.play(FFmpegPulseAudio(sink, args=args), after=None)
             return True
         return False
