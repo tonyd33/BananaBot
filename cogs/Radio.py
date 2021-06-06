@@ -55,12 +55,10 @@ class Radio(commands.Cog):
                 elif 'spotify' in command:
                     query_or_url = commands[index + 1]
                     # TODO: implement
-            except IndexError as e:
-                await ctx.send("Expected additional arguments")
-
                 index += 1
             except IndexError as e:
                 await ctx.send("Expected additional arguments")
+
 
     async def connect_to_channel(self, ctx):
         voice = ctx.guild.voice_client
