@@ -119,6 +119,9 @@ class Subscription(commands.Cog):
     @discord.ext.commands.has_permissions(administrator=True)
     @commands.guild_only()
     async def makesub(self, ctx, sub_name):
+        if len(sub_name) <= MIN_MATCH:
+            await ctx.send(f"This name is too short! Please make this name at least {MIN_MATCH} characters long.")
+            return
         sub_data = self._load_sub_data()
         server_id = str(ctx.guild.id)
 
@@ -163,9 +166,6 @@ class Subscription(commands.Cog):
                       usage=f"SUBSCRIPTION")
     @commands.guild_only()
     async def subscribe(self, ctx, sub_name, *args):
-        if len(sub_name) <= MIN_MATCH:
-            await ctx.send(f"This name is too short! Please make this name at least {MIN_MATCH} characters long.")
-            return
         json_file = self._load_sub_data()
         server_id = str(ctx.guild.id)
         if not self._sub_exists(server_id, sub_name, match_exact=True):
